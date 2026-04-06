@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoberOS v1.0</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.2);
+            --blur: blur(15px);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at center, #2b2d42 0%, #1a1a2e 100%);
+        }
+
+        /* Рабочий стол */
+        #desktop {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center/cover;
+        }
+
+        /* Окно (Glassmorphism) */
+        .window {
+            position: absolute;
+            width: 500px;
+            height: 300px;
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            animation: openWin 0.3s ease-out;
+        }
+
+        @keyframes openWin {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Шапка окна */
+        .window-header {
+            height: 35px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            cursor: move;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .window-title {
+            color: #ddd;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .close { background: #ff5f56; }
+        .min { background: #ffbd2e; }
+        .max { background: #27c93f; }
+
+        /* Контент окна (Терминал) */
+        .window-content {
+            flex: 1;
+            padding: 15px;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            width: 80%;
+            font-family: inherit;
+        }
+
+        /* Док-панель */
+        .dock {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 60px;
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+            z-index: 9999;
+        }
+
+        .icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 20px;
+        }
+
+        .icon:hover {
+            transform: scale(1.2) translateY(-10px);
+            background: rgba(255,255,255,0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div id="desktop">
+    <div class="window" id="terminal-win" style="top: 100px; left: 100px;">
+        <div class="window-header" onmousedown="dragStart(event, 'terminal-win')">
+            <span class="window-title">System Terminal</span>
+            <div class="window-controls">
+                <div class="control-btn min"></div>
+                <div class="control-btn max"></div>
+                <div class="control-btn close" onclick="this.closest('.window').remove()"></div>
+            </div>
+        </div>
+        <div class="window-content" id="term-body">
+            <div>SoberOS [Version 1.0.4]</div>
+            <div>(c) 2026 Sober Dev. Все права защищены.</div>
+            <br>
+            <div id="output">Типа "help" для списка команд.</div>
+            <div style="display: flex;">
+                <span>> &nbsp;</span>
+                <input type="text" id="command-input" class="terminal-input" autofocus>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dock">
+    <div class="icon" onclick="spawnWindow('About', 'SoberOS - это веб-операционка с упором на Glassmorphism.')">📁</div>
+    <div class="icon" onclick="location.reload()">🔄</div>
+    <div class="icon" style="background: linear-gradient(45deg, #00f2fe, #4facfe);">S</div>
+</div>
+
+<script>
+    // --- Логика перетаскивания ---
+    let activeWin = null;
+    let startX, startY, winX, winY;
+    let topZ = 100;
+
+    function dragStart(e, id) {
+        activeWin = document.getElementById(id);
+        activeWin.style.zIndex = ++topZ;
+        
+        startX = e.clientX;
+        startY = e.clientY;
+        winX = activeWin.offsetLeft;
+        winY = activeWin.offsetTop;
+
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('mouseup', dragEnd);
+    }
+
+    function dragMove(e) {
+        if (!activeWin) return;
+        activeWin.style.left = (winX + (e.clientX - startX)) + 'px';
+        activeWin.style.top = (winY + (e.clientY - startY)) + 'px';
+    }
+
+    function dragEnd() {
+        activeWin = null;
+        document.removeEventListener('mousemove', dragMove);
+        document.removeEventListener('mouseup', dragEnd);
+    }
+
+    // --- Логика Терминала ---
+    const input = document.getElementById('command-input');
+    const output = document.getElementById('output');
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = input.value.toLowerCase().trim();
+            const newLine = document.createElement('div');
+            newLine.style.color = '#aaa';
+            newLine.textContent = `> ${cmd}`;
+            output.appendChild(newLine);
+
+            let response = "";
+            if (cmd === 'help') response = "Команды: help, clear, about, time";
+            else if (cmd === 'clear') { output.innerHTML = ""; response = ""; }
+            else if (cmd === 'about') response = "SoberOS: Сделано на чистом JS для гетто-разработчиков.";
+            else if (cmd === 'time') response = "Текущее время: " + new Date().toLocaleTimeString();
+            else if (cmd !== "") response = `Ошибка: команда "${cmd}" не найдена.`;
+
+            if (response) {
+                const resLine = document.createElement('div');
+                resLine.textContent = response;
+                output.appendChild(resLine);
+            }
+
+            input.value = "";
+            document.getElementById('term-body').scrollTop = document.getElementById('term-body').scrollHeight;
+        }
+    });
+
+    // --- Создание новых окон ---
+    function spawnWindow(title, text) {
+        const id = 'win-' + Math.random().toString(36).substr(2, 9);
+        const win = document.createElement('div');
+        win.className = 'window';
+        win.id = id;
+        win.style.top = '200px';
+        win.style.left = '200px';
+        win.style.zIndex = ++topZ;
+        
+        win.innerHTML = `
+            <div class="window-header" onmousedown="dragStart(event, '${id}')">
+                <span class="window-title">${title}</span>
+                <div class="window-controls">
+                    <div class="control-btn close" onclick="document.getElementById('${id}').remove()"></div>
+                </div>
+            </div>
+            <div class="window-content" style="color: white;">${text}</div>
+        `;
+        document.getElementById('desktop').appendChild(win);
+    }
+</script>
+
+</body>
+</html>
