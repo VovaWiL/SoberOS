@@ -2,258 +2,264 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoberOS v1.0</title>
+    <title>SoberOS Elite v1.5</title>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.1);
-            --border: rgba(255, 255, 255, 0.2);
-            --blur: blur(15px);
+            --border: rgba(255, 255, 255, 0.15);
+            --blur: blur(20px);
+            --accent: #4facfe;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             overflow: hidden;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: radial-gradient(circle at center, #2b2d42 0%, #1a1a2e 100%);
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
         }
 
-        /* Рабочий стол */
         #desktop {
-            width: 100vw;
-            height: 100vh;
+            width: 100vw; height: 100vh;
+            background: url('https://w.wallhaven.cc/full/85/wallhaven-85869y.jpg') no-repeat center center/cover;
             position: relative;
-            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center/cover;
-        }
-
-        /* Окно (Glassmorphism) */
-        .window {
-            position: absolute;
-            width: 500px;
-            height: 300px;
-            background: var(--glass);
-            backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            animation: openWin 0.3s ease-out;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        @keyframes openWin {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        /* Иконки на рабочем столе */
+        .desktop-icons {
+            display: grid;
+            grid-auto-flow: column;
+            grid-template-rows: repeat(auto-fill, 100px);
+            gap: 20px;
+            width: fit-content;
         }
 
-        /* Шапка окна */
-        .window-header {
-            height: 35px;
-            background: rgba(0, 0, 0, 0.2);
+        .d-icon {
+            width: 80px; height: 90px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            cursor: move;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
-
-        .window-title {
-            color: #ddd;
-            font-size: 13px;
-            pointer-events: none;
-        }
-
-        .window-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        .control-btn {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
+            justify-content: center;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             cursor: pointer;
-        }
-        .close { background: #ff5f56; }
-        .min { background: #ffbd2e; }
-        .max { background: #27c93f; }
-
-        /* Контент окна (Терминал) */
-        .window-content {
-            flex: 1;
-            padding: 15px;
-            color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
-            overflow-y: auto;
-            font-size: 14px;
+            border-radius: 8px;
+            transition: 0.2s;
+            font-size: 12px;
+            text-align: center;
         }
 
-        .terminal-input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            outline: none;
-            width: 80%;
-            font-family: inherit;
-        }
+        .d-icon:hover { background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
+        .d-icon img { width: 45px; margin-bottom: 5px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
 
-        /* Док-панель */
-        .dock {
-            position: fixed;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 60px;
+        /* Окна */
+        .window {
+            position: absolute;
+            width: 600px; height: 400px;
             background: var(--glass);
             backdrop-filter: var(--blur);
             border: 1px solid var(--border);
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 10px;
-            z-index: 9999;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            z-index: 10;
         }
 
-        .icon {
-            width: 45px;
-            height: 45px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 20px;
+        .win-header {
+            height: 40px; background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; cursor: move;
         }
 
-        .icon:hover {
-            transform: scale(1.2) translateY(-10px);
-            background: rgba(255,255,255,0.4);
+        .win-controls { display: flex; gap: 8px; }
+        .btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none; }
+        .btn-close { background: #ff5f56; }
+        .btn-min { background: #ffbd2e; }
+        .btn-max { background: #27c93f; }
+
+        .win-content { flex: 1; padding: 20px; color: #fff; overflow-y: auto; }
+
+        /* Терминал */
+        .term { font-family: 'Consolas', monospace; color: #00ff41; font-size: 14px; }
+        .t-input { background: transparent; border: none; color: #fff; outline: none; width: 80%; font-family: inherit; }
+
+        /* Виджет Часов */
+        .widgets { position: absolute; top: 30px; right: 30px; color: white; text-align: right; pointer-events: none; }
+        #clock { font-size: 60px; font-weight: 200; letter-spacing: -2px; }
+        #date { font-size: 18px; opacity: 0.8; }
+
+        /* Док */
+        .dock {
+            position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+            height: 65px; background: var(--glass);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            display: flex; align-items: center; padding: 0 15px; gap: 12px;
+            z-index: 1000;
         }
+
+        .dock-item {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 24px;
+        }
+
+        .dock-item:hover { transform: scale(1.3) translateY(-10px); background: rgba(255,255,255,0.2); }
+
+        /* Контекстное меню */
+        #ctx-menu {
+            position: absolute; width: 150px; background: var(--glass);
+            backdrop-filter: var(--blur); border: 1px solid var(--border);
+            border-radius: 8px; display: none; flex-direction: column; z-index: 2000;
+        }
+        .ctx-item { padding: 10px 15px; color: white; font-size: 13px; cursor: pointer; }
+        .ctx-item:hover { background: var(--accent); }
+
     </style>
 </head>
-<body>
+<body oncontextmenu="return showMenu(event)">
 
 <div id="desktop">
-    <div class="window" id="terminal-win" style="top: 100px; left: 100px;">
-        <div class="window-header" onmousedown="dragStart(event, 'terminal-win')">
-            <span class="window-title">System Terminal</span>
-            <div class="window-controls">
-                <div class="control-btn min"></div>
-                <div class="control-btn max"></div>
-                <div class="control-btn close" onclick="this.closest('.window').remove()"></div>
-            </div>
+    <div class="desktop-icons">
+        <div class="d-icon" onclick="openTerminal()">
+            <img src="https://cdn-icons-png.flaticon.com/512/906/906334.png" alt="Terminal">
+            <span>Terminal</span>
         </div>
-        <div class="window-content" id="term-body">
-            <div>SoberOS [Version 1.0.4]</div>
-            <div>(c) 2026 Sober Dev. Все права защищены.</div>
-            <br>
-            <div id="output">Типа "help" для списка команд.</div>
-            <div style="display: flex;">
-                <span>> &nbsp;</span>
-                <input type="text" id="command-input" class="terminal-input" autofocus>
-            </div>
+        <div class="d-icon" onclick="spawnWindow('About', '<h2>SoberOS v1.5</h2><p>Пользователь: Dev<br>Система: Web-Engine 2026</p>')">
+            <img src="https://cdn-icons-png.flaticon.com/512/471/471663.png" alt="System">
+            <span>System</span>
         </div>
+    </div>
+
+    <div class="widgets">
+        <div id="clock">00:00</div>
+        <div id="date">Понедельник, 1 Января</div>
+    </div>
+
+    <div class="dock">
+        <div class="dock-item" onclick="openTerminal()">💻</div>
+        <div class="dock-item" onclick="spawnWindow('Messenger', 'Загрузка TIMATE...')">💬</div>
+        <div class="dock-item" onclick="location.reload()">🔄</div>
+        <div class="dock-item" style="background: var(--accent)">S</div>
     </div>
 </div>
 
-<div class="dock">
-    <div class="icon" onclick="spawnWindow('About', 'SoberOS - это веб-операционка с упором на Glassmorphism.')">📁</div>
-    <div class="icon" onclick="location.reload()">🔄</div>
-    <div class="icon" style="background: linear-gradient(45deg, #00f2fe, #4facfe);">S</div>
+<div id="ctx-menu">
+    <div class="ctx-item" onclick="location.reload()">Обновить</div>
+    <div class="ctx-item" onclick="openTerminal()">Терминал</div>
+    <hr style="border: 0.5px solid var(--border); width: 100%; margin: 0;">
+    <div class="ctx-item" onclick="alert('SoberOS Elite Edition')">О системе</div>
 </div>
 
 <script>
-    // --- Логика перетаскивания ---
-    let activeWin = null;
-    let startX, startY, winX, winY;
-    let topZ = 100;
+    let zIndex = 100;
 
-    function dragStart(e, id) {
-        activeWin = document.getElementById(id);
-        activeWin.style.zIndex = ++topZ;
-        
-        startX = e.clientX;
-        startY = e.clientY;
-        winX = activeWin.offsetLeft;
-        winY = activeWin.offsetTop;
-
-        document.addEventListener('mousemove', dragMove);
-        document.addEventListener('mouseup', dragEnd);
+    // Часы
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        document.getElementById('date').innerText = now.toLocaleDateString('ru-RU', {weekday: 'long', day: 'numeric', month: 'long'});
     }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    function dragMove(e) {
-        if (!activeWin) return;
-        activeWin.style.left = (winX + (e.clientX - startX)) + 'px';
-        activeWin.style.top = (winY + (e.clientY - startY)) + 'px';
+    // Контекстное меню
+    const ctx = document.getElementById('ctx-menu');
+    function showMenu(e) {
+        e.preventDefault();
+        ctx.style.display = 'flex';
+        ctx.style.left = e.pageX + 'px';
+        ctx.style.top = e.pageY + 'px';
+        return false;
     }
+    window.onclick = () => ctx.style.display = 'none';
 
-    function dragEnd() {
-        activeWin = null;
-        document.removeEventListener('mousemove', dragMove);
-        document.removeEventListener('mouseup', dragEnd);
-    }
-
-    // --- Логика Терминала ---
-    const input = document.getElementById('command-input');
-    const output = document.getElementById('output');
-
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const cmd = input.value.toLowerCase().trim();
-            const newLine = document.createElement('div');
-            newLine.style.color = '#aaa';
-            newLine.textContent = `> ${cmd}`;
-            output.appendChild(newLine);
-
-            let response = "";
-            if (cmd === 'help') response = "Команды: help, clear, about, time";
-            else if (cmd === 'clear') { output.innerHTML = ""; response = ""; }
-            else if (cmd === 'about') response = "SoberOS: Сделано на чистом JS для гетто-разработчиков.";
-            else if (cmd === 'time') response = "Текущее время: " + new Date().toLocaleTimeString();
-            else if (cmd !== "") response = `Ошибка: команда "${cmd}" не найдена.`;
-
-            if (response) {
-                const resLine = document.createElement('div');
-                resLine.textContent = response;
-                output.appendChild(resLine);
-            }
-
-            input.value = "";
-            document.getElementById('term-body').scrollTop = document.getElementById('term-body').scrollHeight;
-        }
-    });
-
-    // --- Создание новых окон ---
-    function spawnWindow(title, text) {
-        const id = 'win-' + Math.random().toString(36).substr(2, 9);
+    // Создание Окон
+    function spawnWindow(title, content, isTerminal = false) {
+        const id = 'win-' + Math.random().toString(36).substr(2, 5);
         const win = document.createElement('div');
         win.className = 'window';
         win.id = id;
-        win.style.top = '200px';
-        win.style.left = '200px';
-        win.style.zIndex = ++topZ;
-        
+        win.style.top = (100 + (zIndex % 50)) + 'px';
+        win.style.left = (200 + (zIndex % 50)) + 'px';
+        win.style.zIndex = ++zIndex;
+
         win.innerHTML = `
-            <div class="window-header" onmousedown="dragStart(event, '${id}')">
-                <span class="window-title">${title}</span>
-                <div class="window-controls">
-                    <div class="control-btn close" onclick="document.getElementById('${id}').remove()"></div>
+            <div class="win-header" onmousedown="startDrag(event, '${id}')">
+                <span style="color: #ccc; font-size: 13px;">${title}</span>
+                <div class="win-controls">
+                    <div class="btn btn-min"></div>
+                    <div class="btn btn-max"></div>
+                    <div class="btn btn-close" onclick="document.getElementById('${id}').remove()"></div>
                 </div>
             </div>
-            <div class="window-content" style="color: white;">${text}</div>
+            <div class="win-content ${isTerminal ? 'term' : ''}">${content}</div>
         `;
         document.getElementById('desktop').appendChild(win);
+        if (isTerminal) initTerminal(id);
+    }
+
+    // Drag and Drop
+    let dragObj = null;
+    let offX, offY;
+
+    function startDrag(e, id) {
+        dragObj = document.getElementById(id);
+        dragObj.style.zIndex = ++zIndex;
+        offX = e.clientX - dragObj.offsetLeft;
+        offY = e.clientY - dragObj.offsetTop;
+        document.onmousemove = (ev) => {
+            if (dragObj) {
+                dragObj.style.left = (ev.clientX - offX) + 'px';
+                dragObj.style.top = (ev.clientY - offY) + 'px';
+            }
+        };
+        document.onmouseup = () => dragObj = null;
+    }
+
+    // Терминал Логика
+    function openTerminal() {
+        const body = `
+            <div id="t-out">SoberOS Terminal<br>Введите 'help' для списка команд.</div>
+            <div style="display:flex">> &nbsp;<input type="text" class="t-input" autofocus></div>
+        `;
+        spawnWindow('Terminal', body, true);
+    }
+
+    function initTerminal(winId) {
+        const win = document.getElementById(winId);
+        const input = win.querySelector('.t-input');
+        const output = win.querySelector('#t-out');
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = input.value.toLowerCase().trim();
+                let res = "";
+                if (val === 'help') res = "Доступно: help, clear, exit, color [hex]";
+                else if (val === 'clear') { output.innerHTML = ""; res = ""; }
+                else if (val.startsWith('color ')) {
+                    const c = val.split(' ')[1];
+                    win.querySelector('.win-content').style.color = c;
+                    res = "Цвет изменен на " + c;
+                }
+                else if (val === 'exit') { win.remove(); return; }
+                else res = "Команда не распознана: " + val;
+
+                if (res) output.innerHTML += `<div>> ${val}</div><div>${res}</div>`;
+                input.value = "";
+                win.querySelector('.win-content').scrollTop = 9999;
+            }
+        });
     }
 </script>
-
 </body>
 </html>
