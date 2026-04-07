@@ -2,12 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>SoberOS Elite v1.5</title>
+    <title>SoberOS Pro v2.0</title>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.1);
             --border: rgba(255, 255, 255, 0.15);
-            --blur: blur(20px);
+            --blur: blur(25px);
             --accent: #4facfe;
         }
 
@@ -23,243 +23,164 @@
             width: 100vw; height: 100vh;
             background: url('https://w.wallhaven.cc/full/85/wallhaven-85869y.jpg') no-repeat center center/cover;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
         }
-
-        /* Иконки на рабочем столе */
-        .desktop-icons {
-            display: grid;
-            grid-auto-flow: column;
-            grid-template-rows: repeat(auto-fill, 100px);
-            gap: 20px;
-            width: fit-content;
-        }
-
-        .d-icon {
-            width: 80px; height: 90px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.2s;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        .d-icon:hover { background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
-        .d-icon img { width: 45px; margin-bottom: 5px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
 
         /* Окна */
         .window {
             position: absolute;
-            width: 600px; height: 400px;
+            min-width: 200px; min-height: 150px;
             background: var(--glass);
             backdrop-filter: var(--blur);
             border: 1px solid var(--border);
             border-radius: 12px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             display: flex; flex-direction: column;
-            overflow: hidden;
             z-index: 10;
+            overflow: hidden;
         }
 
         .win-header {
-            height: 40px; background: rgba(0,0,0,0.3);
+            height: 35px; background: rgba(0,0,0,0.4);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; cursor: move;
+            padding: 0 12px; cursor: move; user-select: none;
         }
 
-        .win-controls { display: flex; gap: 8px; }
-        .btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none; }
-        .btn-close { background: #ff5f56; }
-        .btn-min { background: #ffbd2e; }
-        .btn-max { background: #27c93f; }
+        .win-title { color: #fff; font-size: 12px; opacity: 0.8; }
 
-        .win-content { flex: 1; padding: 20px; color: #fff; overflow-y: auto; }
+        .win-content { flex: 1; position: relative; color: white; overflow: auto; }
+        
+        /* Фрейм для мессенджера */
+        iframe { width: 100%; height: 100%; border: none; background: transparent; }
 
-        /* Терминал */
-        .term { font-family: 'Consolas', monospace; color: #00ff41; font-size: 14px; }
-        .t-input { background: transparent; border: none; color: #fff; outline: none; width: 80%; font-family: inherit; }
-
-        /* Виджет Часов */
-        .widgets { position: absolute; top: 30px; right: 30px; color: white; text-align: right; pointer-events: none; }
-        #clock { font-size: 60px; font-weight: 200; letter-spacing: -2px; }
-        #date { font-size: 18px; opacity: 0.8; }
+        /* Уголок для изменения размера */
+        .resizer {
+            width: 15px; height: 15px;
+            background: transparent;
+            position: absolute; right: 0; bottom: 0;
+            cursor: nwse-resize;
+            z-index: 100;
+        }
 
         /* Док */
         .dock {
             position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
-            height: 65px; background: var(--glass);
-            backdrop-filter: var(--blur);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            display: flex; align-items: center; padding: 0 15px; gap: 12px;
-            z-index: 1000;
+            height: 60px; background: var(--glass);
+            backdrop-filter: var(--blur); border: 1px solid var(--border);
+            border-radius: 20px; display: flex; align-items: center; padding: 0 12px; gap: 10px;
+            z-index: 10000;
         }
 
         .dock-item {
-            width: 48px; height: 48px;
+            width: 45px; height: 45px;
             background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 24px;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; font-size: 22px;
         }
 
-        .dock-item:hover { transform: scale(1.3) translateY(-10px); background: rgba(255,255,255,0.2); }
+        .dock-item:hover { transform: scale(1.2) translateY(-10px); background: rgba(255,255,255,0.2); }
 
-        /* Контекстное меню */
-        #ctx-menu {
-            position: absolute; width: 150px; background: var(--glass);
-            backdrop-filter: var(--blur); border: 1px solid var(--border);
-            border-radius: 8px; display: none; flex-direction: column; z-index: 2000;
-        }
-        .ctx-item { padding: 10px 15px; color: white; font-size: 13px; cursor: pointer; }
-        .ctx-item:hover { background: var(--accent); }
+        .btn-close { width: 12px; height: 12px; background: #ff5f56; border-radius: 50%; cursor: pointer; }
 
     </style>
 </head>
-<body oncontextmenu="return showMenu(event)">
+<body>
 
 <div id="desktop">
-    <div class="desktop-icons">
-        <div class="d-icon" onclick="openTerminal()">
-            <img src="https://cdn-icons-png.flaticon.com/512/906/906334.png" alt="Terminal">
-            <span>Terminal</span>
-        </div>
-        <div class="d-icon" onclick="spawnWindow('About', '<h2>SoberOS v1.5</h2><p>Пользователь: Dev<br>Система: Web-Engine 2026</p>')">
-            <img src="https://cdn-icons-png.flaticon.com/512/471/471663.png" alt="System">
-            <span>System</span>
-        </div>
-    </div>
-
-    <div class="widgets">
-        <div id="clock">00:00</div>
-        <div id="date">Понедельник, 1 Января</div>
-    </div>
-
     <div class="dock">
-        <div class="dock-item" onclick="openTerminal()">💻</div>
-        <div class="dock-item" onclick="spawnWindow('Messenger', 'Загрузка TIMATE...')">💬</div>
+        <div class="dock-item" onclick="spawnWindow('Terminal', 'terminal')">💻</div>
+        <div class="dock-item" onclick="openTimate()">💬</div>
         <div class="dock-item" onclick="location.reload()">🔄</div>
-        <div class="dock-item" style="background: var(--accent)">S</div>
     </div>
-</div>
-
-<div id="ctx-menu">
-    <div class="ctx-item" onclick="location.reload()">Обновить</div>
-    <div class="ctx-item" onclick="openTerminal()">Терминал</div>
-    <hr style="border: 0.5px solid var(--border); width: 100%; margin: 0;">
-    <div class="ctx-item" onclick="alert('SoberOS Elite Edition')">О системе</div>
 </div>
 
 <script>
     let zIndex = 100;
 
-    // Часы
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        document.getElementById('date').innerText = now.toLocaleDateString('ru-RU', {weekday: 'long', day: 'numeric', month: 'long'});
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // Контекстное меню
-    const ctx = document.getElementById('ctx-menu');
-    function showMenu(e) {
-        e.preventDefault();
-        ctx.style.display = 'flex';
-        ctx.style.left = e.pageX + 'px';
-        ctx.style.top = e.pageY + 'px';
-        return false;
-    }
-    window.onclick = () => ctx.style.display = 'none';
-
-    // Создание Окон
-    function spawnWindow(title, content, isTerminal = false) {
+    function spawnWindow(title, type, url = "") {
         const id = 'win-' + Math.random().toString(36).substr(2, 5);
         const win = document.createElement('div');
         win.className = 'window';
         win.id = id;
-        win.style.top = (100 + (zIndex % 50)) + 'px';
-        win.style.left = (200 + (zIndex % 50)) + 'px';
+        win.style.width = '500px';
+        win.style.height = '350px';
+        win.style.top = '100px';
+        win.style.left = '100px';
         win.style.zIndex = ++zIndex;
 
+        let content = "";
+        if (type === 'iframe') {
+            content = `<iframe src="${url}"></iframe>`;
+        } else if (type === 'terminal') {
+            content = `<div style="padding:15px; font-family:monospace; color:#0f0;">> SoberOS Terminal Ready...</div>`;
+        } else {
+            content = `<div style="padding:20px;">${url}</div>`;
+        }
+
         win.innerHTML = `
-            <div class="win-header" onmousedown="startDrag(event, '${id}')">
-                <span style="color: #ccc; font-size: 13px;">${title}</span>
-                <div class="win-controls">
-                    <div class="btn btn-min"></div>
-                    <div class="btn btn-max"></div>
-                    <div class="btn btn-close" onclick="document.getElementById('${id}').remove()"></div>
-                </div>
+            <div class="win-header" onmousedown="focusWin('${id}')">
+                <span class="win-title">${title}</span>
+                <div class="btn-close" onclick="document.getElementById('${id}').remove()"></div>
             </div>
-            <div class="win-content ${isTerminal ? 'term' : ''}">${content}</div>
+            <div class="win-content">${content}</div>
+            <div class="resizer" onmousedown="initResize(event, '${id}')"></div>
         `;
+
         document.getElementById('desktop').appendChild(win);
-        if (isTerminal) initTerminal(id);
+        makeDraggable(win);
     }
 
-    // Drag and Drop
-    let dragObj = null;
-    let offX, offY;
+    function openTimate() {
+        // ЗАМЕНИ ТУТ НА ССЫЛКУ ТВОЕГО TIMATE
+        spawnWindow('TIMATE Messenger', 'iframe', 'https://example.com/timate'); 
+    }
 
-    function startDrag(e, id) {
-        dragObj = document.getElementById(id);
-        dragObj.style.zIndex = ++zIndex;
-        offX = e.clientX - dragObj.offsetLeft;
-        offY = e.clientY - dragObj.offsetTop;
-        document.onmousemove = (ev) => {
-            if (dragObj) {
-                dragObj.style.left = (ev.clientX - offX) + 'px';
-                dragObj.style.top = (ev.clientY - offY) + 'px';
+    function focusWin(id) {
+        document.getElementById(id).style.zIndex = ++zIndex;
+    }
+
+    // --- ЛОГИКА DRAG (ПЕРЕТАСКИВАНИЕ) ---
+    function makeDraggable(el) {
+        const header = el.querySelector('.win-header');
+        header.onmousedown = function(e) {
+            focusWin(el.id);
+            let shiftX = e.clientX - el.offsetLeft;
+            let shiftY = e.clientY - el.offsetTop;
+
+            function moveAt(pageX, pageY) {
+                el.style.left = pageX - shiftX + 'px';
+                el.style.top = pageY - shiftY + 'px';
             }
+
+            function onMouseMove(e) { moveAt(e.pageX, e.pageY); }
+            document.addEventListener('mousemove', onMouseMove);
+            document.onmouseup = () => document.removeEventListener('mousemove', onMouseMove);
         };
-        document.onmouseup = () => dragObj = null;
     }
 
-    // Терминал Логика
-    function openTerminal() {
-        const body = `
-            <div id="t-out">SoberOS Terminal<br>Введите 'help' для списка команд.</div>
-            <div style="display:flex">> &nbsp;<input type="text" class="t-input" autofocus></div>
-        `;
-        spawnWindow('Terminal', body, true);
+    // --- ЛОГИКА RESIZE (ИЗМЕНЕНИЕ РАЗМЕРА) ---
+    function initResize(e, id) {
+        e.preventDefault();
+        e.stopPropagation(); // Чтобы не срабатывал Drag
+        const el = document.getElementById(id);
+        const startWidth = el.offsetWidth;
+        const startHeight = el.offsetHeight;
+        const startX = e.clientX;
+        const startY = e.clientY;
+
+        function doResize(ev) {
+            el.style.width = startWidth + (ev.clientX - startX) + 'px';
+            el.style.height = startHeight + (ev.clientY - startY) + 'px';
+        }
+
+        function stopResize() {
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
     }
 
-    function initTerminal(winId) {
-        const win = document.getElementById(winId);
-        const input = win.querySelector('.t-input');
-        const output = win.querySelector('#t-out');
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const val = input.value.toLowerCase().trim();
-                let res = "";
-                if (val === 'help') res = "Доступно: help, clear, exit, color [hex]";
-                else if (val === 'clear') { output.innerHTML = ""; res = ""; }
-                else if (val.startsWith('color ')) {
-                    const c = val.split(' ')[1];
-                    win.querySelector('.win-content').style.color = c;
-                    res = "Цвет изменен на " + c;
-                }
-                else if (val === 'exit') { win.remove(); return; }
-                else res = "Команда не распознана: " + val;
-
-                if (res) output.innerHTML += `<div>> ${val}</div><div>${res}</div>`;
-                input.value = "";
-                win.querySelector('.win-content').scrollTop = 9999;
-            }
-        });
-    }
 </script>
 </body>
 </html>
